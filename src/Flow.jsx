@@ -6,38 +6,23 @@ import ReactFlow, {
   addEdge,
   useReactFlow,
 } from 'reactflow';
+import axios from 'axios';
 import 'reactflow/dist/style.css';
 import './index.css';
 import MyNode from './MyNode';
-import axios from 'axios';
+
 
 // Определение пользовательского узла
 const nodeTypes = { customNode: MyNode };
 
 const Flow = () => {
   const flowKey = 'example-flow';
+
+  // фон подложки
   const rfStyle = {
     backgroundColor: '#B8CEFF',
   };
 
-  // функция генерации id номеров для новых узлов
-  // const getNodeId = () => `randomnode_${+new Date()}`;
-  // функция добавления новых узлов
-  // const addNode = useCallback(()=>{
-  //       const newNode = {
-  //       id: getNodeId(),
-  //       data: { label: 'Added node' },
-  //       position: {
-  //         x: Math.random() * window.innerWidth - 100,
-  //         y: Math.random() * window.innerHeight,
-  //       },
-  //     };
-  //     setNodes((nds) => nds.concat(newNode));
-  //   }, [setNodes]);
-  // if(!datasNodes.length){
-  //   return null
-  // }
-  // })
 
   const initialNodes = [
     { id: 'node-1', type: 'customNode', position: { x: 100, y: 100 }, data: { label: `мой узел 1`, question: 'текст с вопросом №1', answerYes: 'да', answerNo: 'нет' } },
@@ -81,38 +66,54 @@ const Flow = () => {
   }, [setNodes, setViewport]);
 
 
-  // функция вызова API
+   // функция добавления новых узлов
+   const addNode = useCallback(()=>{
+    const newNode = {
+    id: `randomnode_${+new Date()}`,
+    type: 'customNode',
+    data:
+    {
+      label: `Добавленный узел с кнопки`,
+      question: 'Узел с кнопки, возможно лучше сделать узел в возможностью инпута',
+      answerYes: 'да',
+      answerNo: 'нет'
+    },
+    position: {
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+    },
+  };
+  setNodes((nds) => nds.concat(newNode));
+}, [setNodes]);
+
+  // функция вызова API и генерации нового узла из даннных с сервера
   useEffect(() => {
     const axiosData = async () => {
-      const res = await axios.get(`https://jsonplaceholder.typicode.com/posts?_limit=1/`);
-      const nodeAxiosData = res.data;
-      // console.log('nodeAxiosData', nodeAxiosData)
-      const testData = nodeAxiosData.find(item => item.id === 1)
-      // console.log('testData', testData)
-      const newNode = {
-        id: `node-test-${testData.id}`,
-        type: 'customNode',
-        data:
-        {
-          label: `сгенерированный узел ${testData.id}`,
-          question: testData.title,
-          answerYes: 'да',
-          answerNo: 'нет'
-        },
-        position: {
-          x: Math.random() * window.innerWidth - 100,
-          y: Math.random() * window.innerHeight,
-        },
-      };
-      setNodes((nds) => nds.concat(newNode));
-      // console.log("newNode", newNode)
-      // console.log('nodes', nodes)
-    };
+      try {
+        const res = await axios.get(`https://jsonplaceholder.typicode.com/posts?_limit=2/`)
+        const nodeAxiosData = res.data;
+        const newAxiosNode = nodeAxiosData.map(item => ({
+          id: `node-test-${item.id}`,
+          type: 'customNode',
+          data:
+          {
+            label: `сгенерированный узел ${item.id}`,
+            question: item.title,
+            answerYes: 'да',
+            answerNo: 'нет'
+          },
+          position: {
+            x: Math.random() * window.innerWidth - 100,
+            y: Math.random() * window.innerHeight,
+          },
+        }))
+        setNodes((nds) => nds.concat(newAxiosNode));
+      } catch (err) {
+        console.log(err)
+      }
+    }
     axiosData()
   }, [])
-
-  // console.log('nodes', nodes)
-
 
   if (!nodes.length) return null
   return (
@@ -126,10 +127,11 @@ const Flow = () => {
       nodeTypes={nodeTypes}
       style={rfStyle}
     >
+      {/* кнопки можно вынести в shared */}
       <div className="save__controls">
         <button onClick={onSave}>save</button>
         <button onClick={onRestore}>restore</button>
-        {/* <button onClick={onAdd}>add node</button> */}
+        <button onClick={addNode}>add node</button>
       </div>
     </ReactFlow>
   );
@@ -137,6 +139,6 @@ const Flow = () => {
 
 export default () => (
   <ReactFlowProvider>
-    <Flow />
+    <Flow className="flow-container" />
   </ReactFlowProvider>
 );

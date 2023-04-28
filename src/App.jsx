@@ -8,12 +8,14 @@ export default function App() {
 
   return (
     <div>
-      reactflow test
-      <div className='flow-container'>
-        <div style={{ width: '100vw', height: '100vh' }}>
-          <Flow />
-        </div>
+      <h1> reactflow test </h1>
+      <div className='flow-container' >
+        <Flow />
       </div>
+      <div>
+      <h2>какой-то текст</h2>
+      </div>
+
     </div>
 
 
